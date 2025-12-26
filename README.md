@@ -22,7 +22,7 @@ Ce kata est un challenge d'[architecture hexagonale](https://fr.wikipedia.org/wi
 >   - **Nous ne vous tiendrons pas rigueur de ne pas avoir réalisé les autres parties.** 
 >   - **Nous aborderons ensemble les éléments non couverts lors de l'entretien technique**
 > 2. vous avez plus de temps (plusieurs soirées) : le code métier, exposé derrière une api REST, et une persistance fonctionnelle ; le tout testé de bout en bout.
-> 3. vous avez beaucoup de temps, et envie d'aller plus loin : la même chose, avec la containerisation de l'application, et une pipeline de CI/CD ;p
+> 3. vous avez beaucoup de temps, et envie d'aller plus loin : la même chose, avec la containerisation de l'application, et une pipeline de CI/CD (vous ne pourrez pas l'exécuter mais montrez-nous quand même ce dont vous êtes capable) ;p
 > 
 > Vous serez évalués notamment sur les points suivants :
 > 

@@ -24,7 +24,7 @@ focused on the banking domain.
 >    - **We will not hold it against you if you do not complete the other parts.**
 >    - **We will discuss any uncovered elements during the technical interview.**
 > 2. You have more time (several evenings): The business code, exposed via a REST API, and functional persistence; all thoroughly tested end-to-end.
-> 3. You have plenty of time and want to go further: The same, with application containerization and a CI/CD pipeline ;p
+> 3. You have plenty of time and want to go further: The same, with application containerization and a CI/CD pipeline (you won’t be able to execute it, but show us what you’re capable of anyway) ;p
 >
 > You will be evaluated on the following points:
 >
