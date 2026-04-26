@@ -1,0 +1,32 @@
+version: "3.9"
+
+services:
+  kata-postgres:
+    build:
+      context: .
+      dockerfile: postgresql.dockerfile
+
+    container_name: postgreSQL-Kata-Test
+    restart: always
+
+    ports:
+      - "5432:5432"
+
+    environment:
+      POSTGRES_DB: bank_account
+      POSTGRES_USER: bank_account
+      POSTGRES_PASSWORD: bank_account
+
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - init_files:/docker-entrypoint-initdb.d/
+
+volumes:
+  pgdata:
+  init_files:
+    # For mount mapping
+    driver: local
+    driver_opts:
+      type: none
+      device: initdb/
+      o: bind
