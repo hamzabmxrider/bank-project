@@ -19,7 +19,6 @@
     <description>Bank account kata with a hexagonal backend and an Angular dashboard</description>
 
     <modules>
-        <module>dashboard</module>
         <module>bank-core</module>
     </modules>
 

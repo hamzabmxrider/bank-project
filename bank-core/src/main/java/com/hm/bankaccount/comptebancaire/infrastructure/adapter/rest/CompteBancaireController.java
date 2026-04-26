@@ -3,7 +3,6 @@ package com.hm.bankaccount.comptebancaire.infrastructure.adapter.rest;
 import com.hm.bankaccount.comptebancaire.application.usecases.CompteBancaireUseCases;
 import com.hm.bankaccount.comptebancaire.domain.model.CompteBancaire;
 import com.hm.bankaccount.comptebancaire.infrastructure.adapter.rest.dto.CompteBancaireOperation;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;

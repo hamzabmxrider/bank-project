@@ -4,7 +4,6 @@ package com.hm.bankaccount.comptebancaire.domain.model;
 import com.hm.bankaccount.comptebancaire.domain.exception.BusinessRuleViolationException;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
 import java.time.Instant;
