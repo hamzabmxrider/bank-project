@@ -42,8 +42,8 @@ class CompteBancaireTest {
         assertThat(compteBancaire.getSolde()).isEqualByComparingTo("150.25");
         assertThat(compteBancaire.getEvents()).hasSize(1);
 
-        DomainEvent event = compteBancaire.getEvents().iterator().next();
-        assertThat(event.type()).isEqualTo(DomainEventType.DEPOT_COMPTE_BANCAIRE);
+        OperationEvent event = compteBancaire.getEvents().iterator().next();
+        assertThat(event.type()).isEqualTo(OperationEventType.DEPOT_COMPTE_BANCAIRE);
         assertThat(event.message()).isEqualTo("Dépôt de 50.25 sur le compte ACC-003");
         assertThat(event.date()).isNotNull();
     }
@@ -63,13 +63,13 @@ class CompteBancaireTest {
     void retrait_doit_debiter_balance_et_creer_event_retrait() {
         CompteBancaire compteBancaire = CompteBancaire.ouvrirUnCompteCourant("ACC-005", new BigDecimal("100.00"));
 
-        compteBancaire.retrait(new BigDecimal("40.00"));
+        compteBancaire.retrait(new BigDecimal("40.00"), false);
 
         assertThat(compteBancaire.getSolde()).isEqualByComparingTo("60.00");
         assertThat(compteBancaire.getEvents()).hasSize(1);
 
-        DomainEvent event = compteBancaire.getEvents().iterator().next();
-        assertThat(event.type()).isEqualTo(DomainEventType.RETRAIT_COMPTE_BANCAIRE);
+        OperationEvent event = compteBancaire.getEvents().iterator().next();
+        assertThat(event.type()).isEqualTo(OperationEventType.RETRAIT_COMPTE_BANCAIRE);
         assertThat(event.message()).isEqualTo("Retrait de 40.00 sur le compte ACC-005");
         assertThat(event.date()).isNotNull();
     }
@@ -78,7 +78,7 @@ class CompteBancaireTest {
     void retrait_doit_rejeter_montant_negatif() {
         CompteBancaire compteBancaire = CompteBancaire.ouvrirUnCompteCourant("ACC-006", new BigDecimal("100.00"));
 
-        assertThatThrownBy(() -> compteBancaire.retrait(new BigDecimal("-1")))
+        assertThatThrownBy(() -> compteBancaire.retrait(new BigDecimal("-1"), false))
                 .isInstanceOf(BusinessRuleViolationException.class)
                 .hasMessage("Le montant du dépôt doit être supérieur à 0");
         assertThat(compteBancaire.getSolde()).isEqualByComparingTo("100.00");
@@ -89,7 +89,7 @@ class CompteBancaireTest {
     void retrait_doit_rejeter_retrait_avec_fonds_insuffisants_et_ne_rien_modifier() {
         CompteBancaire compteBancaire = CompteBancaire.ouvrirUnCompteCourant("ACC-007", new BigDecimal("25.00"));
 
-        assertThatThrownBy(() -> compteBancaire.retrait(new BigDecimal("25.01")))
+        assertThatThrownBy(() -> compteBancaire.retrait(new BigDecimal("25.01"), false))
                 .isInstanceOf(BusinessRuleViolationException.class)
                 .hasMessage("Fonds insuffisants.");
         assertThat(compteBancaire.getSolde()).isEqualByComparingTo("25.00");
@@ -101,7 +101,7 @@ class CompteBancaireTest {
         CompteBancaire compteBancaire = CompteBancaire.ouvrirUnCompteCourant("ACC-008", new BigDecimal("10.00"));
 
         assertThatThrownBy(() -> compteBancaire.getEvents().add(
-                new DomainEvent(DomainEventType.DEPOT_COMPTE_BANCAIRE, "test", null)))
+                new OperationEvent(OperationEventType.DEPOT_COMPTE_BANCAIRE, new BigDecimal("10.00"), "test", null)))
                 .isInstanceOf(UnsupportedOperationException.class);
     }
 }

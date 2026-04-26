@@ -1,6 +1,6 @@
 package com.hm.bankaccount.comptebancaire.domain.model;
 
-public enum DomainEventType {
+public enum OperationEventType {
 
     DEPOT_COMPTE_BANCAIRE,
 
