@@ -46,7 +46,7 @@
             <scope>provided</scope>
         </dependency>
 
-          </dependencies>
+    </dependencies>
 
     <build>
         <plugins>

@@ -1,8 +1,8 @@
 package com.hm.bankaccount.comptebancaire.application;
 
 import com.hm.bankaccount.comptebancaire.application.out.CompteBancaireRepositoryPort;
-import com.hm.bankaccount.comptebancaire.application.usecases.CompteBancaireUseCases;
 import com.hm.bankaccount.comptebancaire.application.out.EventPublisherPort;
+import com.hm.bankaccount.comptebancaire.application.usecases.CompteBancaireUseCases;
 import com.hm.bankaccount.comptebancaire.domain.model.CompteBancaire;
 import com.hm.bankaccount.comptebancaire.infrastructure.adapter.repository.jpa.SeqJpaRepository;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +32,7 @@ public class CompteBancaireService implements CompteBancaireUseCases {
     }
 
     @Override
-    public CompteBancaire retrait(String numeroDeCompte,  BigDecimal montant) {
+    public CompteBancaire retrait(String numeroDeCompte, BigDecimal montant) {
         final CompteBancaire compteBancaire = this.compteBancaireRepositoryPort.findByNumeroDeCompte(numeroDeCompte);
         log.info("Opération de retrait depuis le compte {} d'un montant de {}", compteBancaire.getNumeroDeCompte(), montant);
         compteBancaire.retrait(montant);
