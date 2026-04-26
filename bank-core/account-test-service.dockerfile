@@ -6,7 +6,7 @@ WORKDIR /app
 
 ARG APPLICATION_NAME=bank-core
 # Copy built JAR
-ARG JAR_FILE=target/bank-core-1.0-SNAPSHOT.jar
+ARG JAR_FILE=target/bank-core-1.0.0-SNAPSHOT.jar
 COPY ${JAR_FILE} app.jar
 
 # Expose port
