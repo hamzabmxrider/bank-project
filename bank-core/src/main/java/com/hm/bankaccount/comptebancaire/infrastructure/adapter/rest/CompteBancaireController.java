@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 
 @RestController
-@RequestMapping("/api/accounts")
+@RequestMapping("/api/v1/accounts")
 @RequiredArgsConstructor
 public class CompteBancaireController {
 
@@ -24,17 +24,17 @@ public class CompteBancaireController {
         return CompteBancaireOperation.from(compteBancaire);
     }
 
-    @PostMapping("/depot")
-    @ResponseStatus(HttpStatus.ACCEPTED)
-    public CompteBancaireOperation depot(@Valid @RequestBody CompteBancaireOperation compteBancaireOperation) {
-        final CompteBancaire compteBancaire = this.compteBancaireUseCases.depot(compteBancaireOperation.getNumeroDeCompte(), compteBancaireOperation.getMontant());
+    @PostMapping("/depot/{numeroCompteBancaire}/{montant}")
+    @ResponseStatus(HttpStatus.OK)
+    public CompteBancaireOperation depot(@PathVariable String numeroCompteBancaire, @PathVariable BigDecimal montant) {
+        final CompteBancaire compteBancaire = this.compteBancaireUseCases.depot(numeroCompteBancaire, montant);
         return CompteBancaireOperation.from(compteBancaire);
     }
 
-    @PostMapping("/retrait")
-    @ResponseStatus(HttpStatus.CREATED)
-    public CompteBancaireOperation retrait(@PathVariable CompteBancaireOperation compteBancaireOperation) {
-        final CompteBancaire compteBancaire = this.compteBancaireUseCases.retrait(compteBancaireOperation.getNumeroDeCompte(), compteBancaireOperation.getMontant());
+    @PostMapping("/retrait/{numeroCompteBancaire}/{montant}")
+    @ResponseStatus(HttpStatus.OK)
+    public CompteBancaireOperation retrait(@PathVariable String numeroCompteBancaire, @PathVariable BigDecimal montant) {
+        final CompteBancaire compteBancaire = this.compteBancaireUseCases.retrait(numeroCompteBancaire, montant);
         return CompteBancaireOperation.from(compteBancaire);
     }
 

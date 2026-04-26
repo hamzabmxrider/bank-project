@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.UUID;
 
 public class CompteBancaire {
@@ -45,22 +46,23 @@ public class CompteBancaire {
         return new CompteBancaire(id, accountNumber, solde);
     }
 
-    public void depot(@NotNull @Min(value = 0) BigDecimal montant) {
-        BigDecimal nextBalance = solde.add(montant);
-
-        if (montant != null && nextBalance.compareTo(montant) > 0) {
-            throw new BusinessRuleViolationException("Deposit limit exceeded");
+    public synchronized void depot(BigDecimal montant) {
+        if(montant.signum() < 0) {
+            throw new BusinessRuleViolationException("Le montant du dépôt doit être supérieur à 0");
         }
 
-        solde = nextBalance;
+        solde = solde.add(montant);
         this.events.add(
                 new DomainEvent(
-                        DomainEventType.RETRAIT_COMPTE_BANCAIRE,
+                        DomainEventType.DEPOT_COMPTE_BANCAIRE,
                         String.format("Dépôt de %s sur le compte %s", montant, getNumeroDeCompte()),
                         Instant.now()));
     }
 
-    public void retrait(@NotNull @Min(value = 0) BigDecimal montant) {
+    public synchronized void retrait(BigDecimal montant) {
+        if(montant.signum() < 0) {
+            throw new BusinessRuleViolationException("Le montant du dépôt doit être supérieur à 0");
+        }
         BigDecimal nextBalance = solde.subtract(montant);
 
         if (nextBalance.compareTo(new BigDecimal(0)) < 0) {
@@ -88,6 +90,6 @@ public class CompteBancaire {
     }
 
     public Collection<DomainEvent> getEvents() {
-        return events;
+        return Collections.unmodifiableCollection(events);
     }
 }

@@ -5,6 +5,7 @@ import com.hm.bankaccount.comptebancaire.application.out.EventPublisherPort;
 import com.hm.bankaccount.comptebancaire.application.usecases.CompteBancaireUseCases;
 import com.hm.bankaccount.comptebancaire.domain.model.CompteBancaire;
 import com.hm.bankaccount.comptebancaire.infrastructure.adapter.repository.jpa.SeqJpaRepository;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -23,6 +24,7 @@ public class CompteBancaireService implements CompteBancaireUseCases {
     private final CompteBancaireRepositoryPort compteBancaireRepositoryPort;
 
     @Override
+    @Transactional
     public CompteBancaire creerUnCompteBancaire(BigDecimal solde) {
         final String numeroCompteBancaire = this.seqJpaRepository.nextAccountNumber();
         final CompteBancaire compteBancaire = CompteBancaire.ouvrirUnCompteCourant(numeroCompteBancaire, solde);
@@ -32,6 +34,7 @@ public class CompteBancaireService implements CompteBancaireUseCases {
     }
 
     @Override
+    @Transactional
     public CompteBancaire retrait(String numeroDeCompte, BigDecimal montant) {
         final CompteBancaire compteBancaire = this.compteBancaireRepositoryPort.findByNumeroDeCompte(numeroDeCompte);
         log.info("Opération de retrait depuis le compte {} d'un montant de {}", compteBancaire.getNumeroDeCompte(), montant);
@@ -42,6 +45,7 @@ public class CompteBancaireService implements CompteBancaireUseCases {
     }
 
     @Override
+    @Transactional
     public CompteBancaire depot(String numeroDeCompte, BigDecimal montant) {
         final CompteBancaire compteBancaire = this.compteBancaireRepositoryPort.findByNumeroDeCompte(numeroDeCompte);
         log.info("Opération de dépôt dans le compte {} d'un montant de {}", compteBancaire.getNumeroDeCompte(), montant);

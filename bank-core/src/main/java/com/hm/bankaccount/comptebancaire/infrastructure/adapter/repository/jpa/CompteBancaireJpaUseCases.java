@@ -24,15 +24,15 @@ public class CompteBancaireJpaUseCases implements CompteBancaireRepositoryPort {
 
     @Override
     public CompteBancaire findByNumeroDeCompte(String numeroDeCompte) {
-        return this.compteBancaireJpaRepository.findByNumeroDeCompte(numeroDeCompte);
+        CompteBancaireEntity compteBancaireEntity = this.compteBancaireJpaRepository.findByNumeroDeCompte(numeroDeCompte);
+        return CompteBancaire.toDomain(compteBancaireEntity.getId(), compteBancaireEntity.getNumeroDeCompte(), compteBancaireEntity.getSolde());
     }
 
     @Override
     public CompteBancaire mettreAJourCompteBancaire(CompteBancaire compteBancaire) {
         this.log.info("Mise à jour du compte bancaire {}", compteBancaire.getNumeroDeCompte());
-        final CompteBancaireEntity compteBancaireEntity = CompteBancaireEntity.from(compteBancaire);
-        final CompteBancaireEntity result = this.compteBancaireJpaRepository.save(compteBancaireEntity);
-        return CompteBancaire.toDomain(result.getId(), result.getNumeroDeCompte(), result.getSolde());
+        this.compteBancaireJpaRepository.update(compteBancaire.getId(), compteBancaire.getNumeroDeCompte(), compteBancaire.getSolde());
+        return compteBancaire;
     }
 
 }
