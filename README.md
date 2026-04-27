@@ -71,6 +71,8 @@ Expanded test coverage
 This project is designed as a clean starting point for scalable backend development, focusing on architecture, maintainability, and extensibility.
 More improvements and features can be added over time.
 
+To run on intellij ==> 
+<img width="740" height="609" alt="image" src="https://github.com/user-attachments/assets/91847d05-3059-443b-8188-a9cb0fc8711d" />
 
 
 # Sujet
