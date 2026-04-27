@@ -2,6 +2,7 @@ package com.hm.bankaccount.comptebancaire.domain.model;
 
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 public class ProduitFinancierAggregator {
 
@@ -27,5 +28,19 @@ public class ProduitFinancierAggregator {
     public void retrait(BigDecimal montant) {
         compteBancaire.retrait(montant, !produitsFinanciers.isEmpty());
         this.validerTransaction(compteBancaire.getEvents());
+    }
+
+    public void attacherCreditBancaire(CreditBancaireType creditBancaireType, BigDecimal montant) {
+        // Possibilité d'utiliser une fabrique ..
+        if(creditBancaireType == CreditBancaireType.DECOUVERT) {
+            produitsFinanciers.add(new DecouvertAutorise(null, montant));
+        }
+    }
+
+    public Collection<CreditBancaire> getCreditsBancaires() {
+        return produitsFinanciers.stream()
+                .filter(e -> e instanceof CreditBancaire)
+                .map(e -> (CreditBancaire) e)
+                .collect(Collectors.toUnmodifiableList());
     }
 }

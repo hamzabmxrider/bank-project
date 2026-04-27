@@ -8,7 +8,7 @@ import java.util.UUID;
 public class DecouvertAutorise extends CreditBancaire {
 
     public DecouvertAutorise(UUID id, BigDecimal montant) {
-        super(id, montant);
+        super(id, "Découvert Autorisé", montant);
         this.type = CreditBancaireType.DECOUVERT;
     }
 

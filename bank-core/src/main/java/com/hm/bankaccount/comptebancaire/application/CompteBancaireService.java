@@ -4,10 +4,7 @@ import com.hm.bankaccount.comptebancaire.application.out.CompteBancaireRepositor
 import com.hm.bankaccount.comptebancaire.application.out.CreditBancaireRepositoryPort;
 import com.hm.bankaccount.comptebancaire.application.out.EventPublisherPort;
 import com.hm.bankaccount.comptebancaire.application.usecases.CompteBancaireUseCases;
-import com.hm.bankaccount.comptebancaire.domain.model.CompteBancaire;
-import com.hm.bankaccount.comptebancaire.domain.model.DecouvertAutorise;
-import com.hm.bankaccount.comptebancaire.domain.model.ProduitFinancier;
-import com.hm.bankaccount.comptebancaire.domain.model.ProduitFinancierAggregator;
+import com.hm.bankaccount.comptebancaire.domain.model.*;
 import com.hm.bankaccount.comptebancaire.infrastructure.adapter.repository.jpa.SeqJpaRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,8 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
 
 @Slf4j
 @Component
@@ -48,14 +43,25 @@ public class CompteBancaireService implements CompteBancaireUseCases {
         log.info("Opération de retrait depuis le compte {} d'un montant de {}", compteBancaire.getNumeroDeCompte(), montant);
 
         final Collection<ProduitFinancier> produitFinanciers = this.creditBancaireRepositoryPort.findByNumeroDeCompte(numeroDeCompte);
-        final ProduitFinancierAggregator produitFinancierAggregator = ProduitFinancierAggregator.from(compteBancaire,
-                List.of(new DecouvertAutorise(UUID.randomUUID(), new BigDecimal("5000"))));
+        final ProduitFinancierAggregator produitFinancierAggregator = ProduitFinancierAggregator.from(compteBancaire, produitFinanciers);
 
         produitFinancierAggregator.retrait(montant);
 
         final CompteBancaire compteBancaireSauvegarde = this.compteBancaireRepositoryPort.mettreAJourCompteBancaire(compteBancaire);
         this.eventPublisherPort.publish(compteBancaireSauvegarde.getNumeroDeCompte(), compteBancaire.getEvents());
         return compteBancaireSauvegarde;
+    }
+
+    @Override
+    public Collection<CreditBancaire> attacherCreditBancaire(String numeroCompteBancaire, CreditBancaireType creditBancaireType, BigDecimal actif) {
+        final CompteBancaire compteBancaire = this.compteBancaireRepositoryPort.findByNumeroDeCompte(numeroCompteBancaire);
+        log.info("Opération de rattachement d'un crédit bancaire au compte {} de type {}", compteBancaire.getNumeroDeCompte(), creditBancaireType);
+
+        final Collection<ProduitFinancier> produitFinanciers = this.creditBancaireRepositoryPort.findByNumeroDeCompte(numeroCompteBancaire);
+        final ProduitFinancierAggregator produitFinancierAggregator = ProduitFinancierAggregator.from(compteBancaire, produitFinanciers);
+        produitFinancierAggregator.attacherCreditBancaire(creditBancaireType, actif);
+
+        return this.creditBancaireRepositoryPort.creerCreditBancaire(numeroCompteBancaire, produitFinancierAggregator.getCreditsBancaires());
     }
 
     @Override
