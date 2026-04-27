@@ -9,13 +9,13 @@ public abstract class CreditBancaire extends ProduitFinancier {
 
     protected CreditBancaireType type;
 
-    protected CreditBancaire(UUID id,  String nom, BigDecimal montant) {
+    protected CreditBancaire(UUID id, String nom, BigDecimal montant) {
         super(id, nom, montant.toPlainString());
         this.montant = montant;
     }
 
     public static CreditBancaire toDomain(UUID id, BigDecimal montant, CreditBancaireType type) {
-        if(type == CreditBancaireType.DECOUVERT)
+        if (type == CreditBancaireType.DECOUVERT)
             return new DecouvertAutorise(id, montant);
         return new CreditBancaire(id, "Crédit Bancaire", montant) {
             @Override

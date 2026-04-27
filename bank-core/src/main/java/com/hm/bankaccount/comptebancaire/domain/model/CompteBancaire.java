@@ -2,8 +2,6 @@ package com.hm.bankaccount.comptebancaire.domain.model;
 
 
 import com.hm.bankaccount.comptebancaire.domain.exception.BusinessRuleViolationException;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotEmpty;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -22,18 +20,31 @@ public class CompteBancaire {
 
     private Collection<OperationEvent> events;
 
-    private CompteBancaire(
+    protected CompteBancaire(
             UUID id,
-            @NotEmpty String NumeroDeCompte,
-            @Min(value = 0) BigDecimal solde
+            String NumeroDeCompte,
+            BigDecimal solde
     ) {
         this.id = id;
         this.NumeroDeCompte = NumeroDeCompte;
         this.solde = solde;
         this.events = new ArrayList<>();
+        this.events.add(
+                new OperationEvent(
+                        OperationEventType.OUVERTURE_COMPTE,
+                        solde,
+                        String.format("Ouverture du compte %s avec un dépôt initial de %s", getNumeroDeCompte(), solde),
+                        Instant.now())
+        );
     }
 
     public static CompteBancaire ouvrirUnCompteCourant(String numeroDeCompte, BigDecimal soldeInitial) {
+        if (soldeInitial.signum() < 0) {
+            throw new BusinessRuleViolationException("Le montant du dépôt initial doit être supérieur ou égal à 0");
+        }
+        if ("".equals(numeroDeCompte) || numeroDeCompte == null) {
+            throw new BusinessRuleViolationException("Le numéro de compte ne doit pas être null");
+        }
         return new CompteBancaire(null, numeroDeCompte, soldeInitial);
     }
 
@@ -45,8 +56,12 @@ public class CompteBancaire {
         return new CompteBancaire(id, accountNumber, solde);
     }
 
+    public boolean estCompatible(final CreditBancaireType creditBancaireType) {
+        return true;
+    }
+
     public synchronized void depot(BigDecimal montant) {
-        if(montant.signum() < 0) {
+        if (montant.signum() < 0) {
             throw new BusinessRuleViolationException("Le montant du dépôt doit être supérieur à 0");
         }
 
@@ -60,7 +75,7 @@ public class CompteBancaire {
     }
 
     public synchronized void retrait(BigDecimal montant, boolean estCredit) {
-        if(montant.signum() < 0) {
+        if (montant.signum() < 0) {
             throw new BusinessRuleViolationException("Le montant du dépôt doit être supérieur à 0");
         }
         BigDecimal nextBalance = solde.subtract(montant);

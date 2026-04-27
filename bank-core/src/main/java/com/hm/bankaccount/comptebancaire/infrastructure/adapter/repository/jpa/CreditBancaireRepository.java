@@ -28,7 +28,7 @@ public class CreditBancaireRepository implements CreditBancaireRepositoryPort {
                         CreditBancaire.toDomain(
                                 e.getId(),
                                 e.getMontant(),
-                        e.getType()))
+                                e.getType()))
                 .collect(Collectors.toSet());
     }
 
