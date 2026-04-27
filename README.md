@@ -2,6 +2,25 @@
 🌐 Disponible en :  
 [🇫🇷 Français](README.md) | [🇬🇧 English](README.en.md)
 
+# As a response to a technical test, i would like to share with you this backend development basics that may help you bootstrap an application without headache of prompting / reanswering and losing considerable time.
+
+Here is a simple solution with following technics:
+
+- Hexagonal Architecture
+- DDD (Domain Driven Design) [With some improvements to add as value objects, validators...]
+- Rest APIs endpoints using RestControllers
+- Thymeleaf Templates to generate PDF using additional Adapter to convert HTML template to PDF
+- Docker containers to ship application and bootstrap postgresql
+- JPA Repositories
+- PostgreSQL Sequence management to initialize domain entities without Duplicate headaches (Only one is concerned CompteBancaire as domain is small)
+- Cucumber Tests for e2e validations
+- Domain unit Tests
+
+I'm running out of time so i shared partially tested application, hope that will be usefull for you ! 
+
+More to come ! 
+- Don't forget to secure APIs, add account access validations ... 
+
 # Sujet
 
 Ce kata est un challenge d'[architecture hexagonale](https://fr.wikipedia.org/wiki/Architecture_hexagonale) autour du domaine de la banque.
