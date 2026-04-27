@@ -70,6 +70,12 @@ jobs:
         image: postgres:15-bullseye
         ports:
           - 5432:5432
+        env:
+          POSTGRES_DB: ${{env.POSTGRES_DB}}
+          POSTGRES_USER: ${{env.POSTGRES_USER}}
+          POSTGRES_PASSWORD: ${{env.POSTGRES_PASSWORD}}
+        volumes:
+          - ./postgresql/initdb:/docker-entrypoint-initdb.d
         options: >-
           --health-cmd="pg_isready -U bank_account -d bank_account"
           --health-interval=10s
@@ -95,6 +101,12 @@ jobs:
     services:
       postgres:
         image: postgres:15-bullseye
+        env:
+          POSTGRES_DB: ${{env.POSTGRES_DB}}
+          POSTGRES_USER: ${{env.POSTGRES_USER}}
+          POSTGRES_PASSWORD: ${{env.POSTGRES_PASSWORD}}
+        volumes:
+          - ./postgresql/initdb:/docker-entrypoint-initdb.d
         ports:
           - 5432:5432
         options: >-
