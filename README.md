@@ -2,24 +2,76 @@
 🌐 Disponible en :  
 [🇫🇷 Français](README.md) | [🇬🇧 English](README.en.md)
 
-# As a response to a technical test, i would like to share with you this backend development basics that may help you bootstrap an application without headache of prompting / reanswering and losing considerable time.
+📘 Backend Technical Test – Base Architecture Proposal
+This project is provided as a response to a technical assessment and aims to demonstrate a clean backend foundation that can be used to bootstrap an application quickly and safely, without losing time on repetitive setup or architectural decisions.
 
-Here is a simple solution with following technics:
+🚀 Purpose
+The goal of this project is to provide a ready-to-use backend skeleton with good practices in place, allowing faster development while maintaining maintainability and scalability.
 
-- Hexagonal Architecture
-- DDD (Domain Driven Design) [With some improvements to add as value objects, validators...]
-- Rest APIs endpoints using RestControllers
-- Thymeleaf Templates to generate PDF using additional Adapter to convert HTML template to PDF
-- Docker containers to ship application and bootstrap postgresql
-- JPA Repositories
-- PostgreSQL Sequence management to initialize domain entities without Duplicate headaches (Only one is concerned CompteBancaire as domain is small)
-- Cucumber Tests for e2e validations
-- Domain unit Tests
+🧱 Architecture & Design Principles
+The solution is built using:
 
-I'm running out of time so i shared partially tested application, hope that will be usefull for you ! 
+🧩 Hexagonal Architecture
+Clear separation between domain, application, and infrastructure layers
+Improves testability and maintainability
 
-More to come ! 
-- Don't forget to secure APIs, add account access validations ... 
+📐 Domain-Driven Design (DDD)
+Core business logic isolated in the domain layer
+Use of domain concepts, services, and entities
+Includes enhancements such as:
+Value Objects
+Domain Validators
+
+🌐 API Layer
+REST APIs
+Exposed via @RestController
+Clean separation between HTTP layer and domain logic
+
+📄 Document Generation
+PDF Generation
+Uses Thymeleaf templates for HTML rendering
+HTML is converted into PDF through a dedicated adapter layer
+Ensures separation between presentation and export logic
+
+🗄️ Persistence Layer
+JPA / Hibernate
+Managed through Spring Data JPA repositories
+PostgreSQL used as database
+Database Strategy
+PostgreSQL sequences used for entity identity generation
+Prevents duplication issues for domain entities (notably CompteBancaire)
+
+🐳 Deployment
+Docker Support
+Application containerized using Docker
+PostgreSQL also provided as a container
+Enables quick local bootstrap and environment consistency
+
+🧪 Testing Strategy
+Integration / End-to-End Tests
+Implemented using Cucumber for behavior-driven validation
+Unit Tests
+Focused on domain logic validation
+Ensures business rules correctness
+
+⚠️ Notes
+This is a partial implementation due to time constraints, but it demonstrates the core architecture and main building blocks of a production-ready backend.
+
+🔐 Recommendations for Production
+To evolve this project further, the following improvements are recommended:
+
+API security (Spring Security / JWT)
+Account and access control validation
+Centralized exception handling
+Observability (logging, metrics, tracing)
+CI/CD pipeline integration
+Expanded test coverage
+
+📌 Final Note
+This project is designed as a clean starting point for scalable backend development, focusing on architecture, maintainability, and extensibility.
+More improvements and features can be added over time.
+
+
 
 # Sujet
 
