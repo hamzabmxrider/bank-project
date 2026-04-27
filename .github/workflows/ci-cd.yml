@@ -77,6 +77,7 @@ jobs:
         volumes:
           - ./postgresql/initdb:/docker-entrypoint-initdb.d
         options: >-
+          --user 1000:1000
           --health-cmd="pg_isready -U bank_account -d bank_account"
           --health-interval=10s
           --health-timeout=5s
@@ -110,6 +111,7 @@ jobs:
         ports:
           - 5432:5432
         options: >-
+          --user 1000:1000
           --health-cmd="pg_isready -U bank_account -d bank_account"
           --health-interval=10s
           --health-timeout=5s
