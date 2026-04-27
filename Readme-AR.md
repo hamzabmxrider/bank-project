@@ -138,6 +138,3 @@ JPA / Hibernate
 قائمة العمليات مرتبة حسب التاريخ (تنازليًا)
 🍀 حظًا موفقًا!
 
-If you want, I can also:
-👉 make a short Arabic summary version (for README header)
-👉 or convert it into a beautiful GitHub README with badges + structure 👍
