@@ -1,7 +1,7 @@
 package com.hm.bankaccount.comptebancaire.infrastructure.adapter.repository.jpa.entity;
 
-import com.hm.bankaccount.comptebancaire.domain.model.DomainEvent;
-import com.hm.bankaccount.comptebancaire.domain.model.DomainEventType;
+import com.hm.bankaccount.comptebancaire.domain.model.OperationEvent;
+import com.hm.bankaccount.comptebancaire.domain.model.OperationEventType;
 import jakarta.persistence.*;
 import org.hibernate.annotations.GenericGenerator;
 
@@ -19,11 +19,11 @@ public class CompteBancaireEventsEntity {
     String numeroDeCompte;
 
     @Enumerated(EnumType.STRING)
-    DomainEventType type;
+    OperationEventType type;
 
     String message;
 
-    public CompteBancaireEventsEntity(UUID id, String numeroDeCompte, DomainEventType type, String message) {
+    public CompteBancaireEventsEntity(UUID id, String numeroDeCompte, OperationEventType type, String message) {
         this.id = id;
         this.numeroDeCompte = numeroDeCompte;
         this.type = type;
@@ -34,7 +34,7 @@ public class CompteBancaireEventsEntity {
 
     }
 
-    public static CompteBancaireEventsEntity from(String numeroDeCompte, DomainEvent e) {
+    public static CompteBancaireEventsEntity from(String numeroDeCompte, OperationEvent e) {
         return new CompteBancaireEventsEntity(null, numeroDeCompte, e.type(), e.message());
     }
 }

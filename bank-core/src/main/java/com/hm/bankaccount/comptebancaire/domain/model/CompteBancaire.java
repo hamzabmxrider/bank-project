@@ -20,7 +20,7 @@ public class CompteBancaire {
 
     private BigDecimal solde;
 
-    private Collection<DomainEvent> events;
+    private Collection<OperationEvent> events;
 
     private CompteBancaire(
             UUID id,
@@ -52,28 +52,40 @@ public class CompteBancaire {
 
         solde = solde.add(montant);
         this.events.add(
-                new DomainEvent(
-                        DomainEventType.DEPOT_COMPTE_BANCAIRE,
+                new OperationEvent(
+                        OperationEventType.DEPOT_COMPTE_BANCAIRE,
+                        montant,
                         String.format("Dépôt de %s sur le compte %s", montant, getNumeroDeCompte()),
                         Instant.now()));
     }
 
-    public synchronized void retrait(BigDecimal montant) {
+    public synchronized void retrait(BigDecimal montant, boolean estCredit) {
         if(montant.signum() < 0) {
             throw new BusinessRuleViolationException("Le montant du dépôt doit être supérieur à 0");
         }
         BigDecimal nextBalance = solde.subtract(montant);
 
-        if (nextBalance.compareTo(new BigDecimal(0)) < 0) {
+        if (!estCredit && nextBalance.compareTo(new BigDecimal(0)) < 0) {
             throw new BusinessRuleViolationException("Fonds insuffisants.");
         }
 
         solde = nextBalance;
         this.events.add(
-                new DomainEvent(
-                        DomainEventType.RETRAIT_COMPTE_BANCAIRE,
+                new OperationEvent(
+                        OperationEventType.RETRAIT_COMPTE_BANCAIRE,
+                        montant,
                         String.format("Retrait de %s sur le compte %s", montant, getNumeroDeCompte()),
                         Instant.now()));
+    }
+
+    public synchronized void attacherProduitFinancier(ProduitFinancier produitFinancier) {
+        this.events.add(
+                new OperationEvent(
+                        OperationEventType.RATTACHEMENT_PRODUIT_FINANCIER,
+                        new BigDecimal(produitFinancier.getActif().getValue()),
+                        produitFinancier.getNom(),
+                        Instant.now()
+                ));
     }
 
     public UUID getId() {
@@ -88,7 +100,7 @@ public class CompteBancaire {
         return solde;
     }
 
-    public Collection<DomainEvent> getEvents() {
+    public Collection<OperationEvent> getEvents() {
         return Collections.unmodifiableCollection(events);
     }
 }

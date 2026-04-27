@@ -7,7 +7,7 @@ spring:
     password: bank_account
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create-drop
     open-in-view: false
     properties:
       hibernate:
