@@ -78,6 +78,16 @@ public class CompteBancaire {
                         Instant.now()));
     }
 
+    public synchronized void attacherProduitFinancier(ProduitFinancier produitFinancier) {
+        this.events.add(
+                new OperationEvent(
+                        OperationEventType.RATTACHEMENT_PRODUIT_FINANCIER,
+                        new BigDecimal(produitFinancier.getActif().getValue()),
+                        produitFinancier.getNom(),
+                        Instant.now()
+                ));
+    }
+
     public UUID getId() {
         return id;
     }

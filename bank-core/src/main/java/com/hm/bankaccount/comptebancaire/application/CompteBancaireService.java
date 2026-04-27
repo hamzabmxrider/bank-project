@@ -61,7 +61,10 @@ public class CompteBancaireService implements CompteBancaireUseCases {
         final ProduitFinancierAggregator produitFinancierAggregator = ProduitFinancierAggregator.from(compteBancaire, produitFinanciers);
         produitFinancierAggregator.attacherCreditBancaire(creditBancaireType, actif);
 
-        return this.creditBancaireRepositoryPort.creerCreditBancaire(numeroCompteBancaire, produitFinancierAggregator.getCreditsBancaires());
+        final Collection<CreditBancaire> creditBancaires = this.creditBancaireRepositoryPort.creerCreditBancaire(numeroCompteBancaire, produitFinancierAggregator.getCreditsBancaires());
+        this.eventPublisherPort.publish(compteBancaire.getNumeroDeCompte(), compteBancaire.getEvents());
+
+        return creditBancaires;
     }
 
     @Override
@@ -74,6 +77,7 @@ public class CompteBancaireService implements CompteBancaireUseCases {
 
         final CompteBancaire compteBancaireSauvegarde = this.compteBancaireRepositoryPort.mettreAJourCompteBancaire(compteBancaire);
         this.eventPublisherPort.publish(compteBancaireSauvegarde.getNumeroDeCompte(), compteBancaire.getEvents());
+
         return compteBancaireSauvegarde;
     }
 }
