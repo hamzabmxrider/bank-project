@@ -27,6 +27,13 @@ public class CompteBancaireController {
         return CompteBancaireOperation.from(compteBancaire);
     }
 
+    @PostMapping("/livretepargne/{solde}")
+    @ResponseStatus(HttpStatus.CREATED)
+    public CompteBancaireOperation creerCompteLivretEpargne(@PathVariable BigDecimal solde) {
+        final CompteBancaire compteBancaire = this.compteBancaireUseCases.creerUnLivretEpargne(solde);
+        return CompteBancaireOperation.from(compteBancaire);
+    }
+
     @PostMapping("/creditbancaire/decouvert/{numeroCompteBancaire}/{plafond}")
     @ResponseStatus(HttpStatus.CREATED)
     public Collection<CreditBancaireOperation> ajouterCreditBancaire(@PathVariable String numeroCompteBancaire, @PathVariable BigDecimal plafond) {

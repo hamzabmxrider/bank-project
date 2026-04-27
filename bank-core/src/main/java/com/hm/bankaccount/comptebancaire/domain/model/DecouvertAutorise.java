@@ -13,8 +13,8 @@ public class DecouvertAutorise extends CreditBancaire {
     }
 
     public void verifierEligibilite(CompteBancaire compteBancaire, OperationEvent operationEvent) {
-        if(operationEvent.type() == OperationEventType.RETRAIT_COMPTE_BANCAIRE) {
-            if(compteBancaire.getSolde().abs().compareTo(this.montant) > 0) {
+        if (operationEvent.type() == OperationEventType.RETRAIT_COMPTE_BANCAIRE) {
+            if (compteBancaire.getSolde().abs().compareTo(this.montant) > 0) {
                 throw new BusinessRuleViolationException(
                         String.format(
                                 "Le découvert n'autorise pas le retrait de %s sur le compte %s",

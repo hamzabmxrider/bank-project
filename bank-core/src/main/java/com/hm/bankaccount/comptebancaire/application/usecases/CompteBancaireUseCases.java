@@ -11,6 +11,8 @@ public interface CompteBancaireUseCases {
 
     CompteBancaire creerUnCompteBancaire(BigDecimal solde);
 
+    CompteBancaire creerUnLivretEpargne(BigDecimal solde);
+
     CompteBancaire depot(String numeroDeCompte, BigDecimal montant);
 
     CompteBancaire retrait(String numeroDeCompte, BigDecimal montant);

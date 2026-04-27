@@ -37,6 +37,15 @@ public class CompteBancaireService implements CompteBancaireUseCases {
     }
 
     @Override
+    public CompteBancaire creerUnLivretEpargne(BigDecimal solde) {
+        final String numeroCompteBancaire = this.seqJpaRepository.nextAccountNumber();
+        final LivretEpargne compteBancaire = LivretEpargne.ouvrirUnLivretEpargne(numeroCompteBancaire, solde);
+        final CompteBancaire compteBancaireSauvegarde = this.compteBancaireRepositoryPort.persisterCompteBancaire(compteBancaire);
+        this.eventPublisherPort.publish(compteBancaire.getNumeroDeCompte(), compteBancaire.getEvents());
+        return compteBancaireSauvegarde;
+    }
+
+    @Override
     @Transactional
     public CompteBancaire retrait(String numeroDeCompte, BigDecimal montant) {
         final CompteBancaire compteBancaire = this.compteBancaireRepositoryPort.findByNumeroDeCompte(numeroDeCompte);

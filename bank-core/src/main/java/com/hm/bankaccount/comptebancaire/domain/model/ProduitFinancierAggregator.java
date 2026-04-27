@@ -32,7 +32,7 @@ public class ProduitFinancierAggregator {
 
     public void attacherCreditBancaire(CreditBancaireType creditBancaireType, BigDecimal montant) {
         // Possibilité d'utiliser une fabrique ..
-        if(creditBancaireType == CreditBancaireType.DECOUVERT) {
+        if (creditBancaireType == CreditBancaireType.DECOUVERT) {
             final DecouvertAutorise decouvertAutorise = new DecouvertAutorise(null, montant);
             produitsFinanciers.add(decouvertAutorise);
             compteBancaire.attacherProduitFinancier(decouvertAutorise);
