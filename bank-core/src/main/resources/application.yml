@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: banking-core
+  datasource:
+    url: jdbc:postgresql://${DOCKER_POSTGRES_IP}:5432/bank_account
+    username: bank_account
+    password: bank_account
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+  sql:
+    init:
+      mode: never
+
+server:
+  port: 8080
