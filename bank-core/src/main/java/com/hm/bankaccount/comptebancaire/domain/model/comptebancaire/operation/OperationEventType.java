@@ -1,4 +1,4 @@
-package com.hm.bankaccount.comptebancaire.domain.model;
+package com.hm.bankaccount.comptebancaire.domain.model.comptebancaire.operation;
 
 public enum OperationEventType {
 

@@ -1,7 +1,7 @@
 package com.hm.bankaccount.comptebancaire.infrastructure.adapter.repository.jpa.entity;
 
-import com.hm.bankaccount.comptebancaire.domain.model.CreditBancaire;
-import com.hm.bankaccount.comptebancaire.domain.model.CreditBancaireType;
+import com.hm.bankaccount.comptebancaire.domain.model.produitfinancier.CreditBancaire;
+import com.hm.bankaccount.comptebancaire.domain.model.produitfinancier.CreditBancaireType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -27,7 +27,6 @@ public class CreditBancaireEntity {
     private BigDecimal montant;
 
     @Enumerated(EnumType.STRING)
-    @Column(unique = true)
     private CreditBancaireType type;
 
     @ManyToOne

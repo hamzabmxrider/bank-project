@@ -1,4 +1,7 @@
-package com.hm.bankaccount.comptebancaire.domain.model;
+package com.hm.bankaccount.comptebancaire.domain.model.produitfinancier;
+
+import com.hm.bankaccount.comptebancaire.domain.model.comptebancaire.CompteBancaire;
+import com.hm.bankaccount.comptebancaire.domain.model.comptebancaire.operation.OperationEvent;
 
 import java.math.BigDecimal;
 import java.util.Collection;
@@ -34,6 +37,7 @@ public class ProduitFinancierAggregator {
         // Possibilité d'utiliser une fabrique ..
         if (creditBancaireType == CreditBancaireType.DECOUVERT) {
             final DecouvertAutorise decouvertAutorise = new DecouvertAutorise(null, montant);
+            compteBancaire.verifierCompatibiliteCreditBancaire(CreditBancaireType.DECOUVERT);
             produitsFinanciers.add(decouvertAutorise);
             compteBancaire.attacherProduitFinancier(decouvertAutorise);
         }

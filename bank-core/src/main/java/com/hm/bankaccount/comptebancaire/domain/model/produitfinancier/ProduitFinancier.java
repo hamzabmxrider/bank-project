@@ -1,4 +1,7 @@
-package com.hm.bankaccount.comptebancaire.domain.model;
+package com.hm.bankaccount.comptebancaire.domain.model.produitfinancier;
+
+import com.hm.bankaccount.comptebancaire.domain.model.comptebancaire.CompteBancaire;
+import com.hm.bankaccount.comptebancaire.domain.model.comptebancaire.operation.OperationEvent;
 
 import java.util.UUID;
 

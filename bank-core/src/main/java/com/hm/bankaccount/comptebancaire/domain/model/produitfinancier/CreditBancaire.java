@@ -1,4 +1,4 @@
-package com.hm.bankaccount.comptebancaire.domain.model;
+package com.hm.bankaccount.comptebancaire.domain.model.produitfinancier;
 
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -17,12 +17,7 @@ public abstract class CreditBancaire extends ProduitFinancier {
     public static CreditBancaire toDomain(UUID id, BigDecimal montant, CreditBancaireType type) {
         if (type == CreditBancaireType.DECOUVERT)
             return new DecouvertAutorise(id, montant);
-        return new CreditBancaire(id, "Crédit Bancaire", montant) {
-            @Override
-            public void verifierEligibilite(CompteBancaire compteBancaire, OperationEvent operationEvent) {
-                // RAF
-            }
-        };
+        throw new UnsupportedOperationException();
     }
 
     public BigDecimal getMontant() {

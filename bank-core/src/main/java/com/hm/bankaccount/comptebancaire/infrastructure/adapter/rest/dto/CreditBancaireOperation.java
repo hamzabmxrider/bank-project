@@ -1,6 +1,6 @@
 package com.hm.bankaccount.comptebancaire.infrastructure.adapter.rest.dto;
 
-import com.hm.bankaccount.comptebancaire.domain.model.CreditBancaire;
+import com.hm.bankaccount.comptebancaire.domain.model.produitfinancier.CreditBancaire;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
