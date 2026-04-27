@@ -73,7 +73,7 @@ jobs:
           cache: maven
 
       - name: Integration tests
-        run: mvn $MAVEN_ARGS -pl "$MODULE" -am -Dtest='*IT' -DfailIfNoTests=false test
+        run: mvn $MAVEN_ARGS -pl "$MODULE" -am verify
 
   cucumber-tests:
     runs-on: ubuntu-latest
