@@ -14,7 +14,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.io.UnsupportedEncodingException;
-import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -44,8 +43,8 @@ public class CompteBancaireStepDefinitions {
 
     @Given("Créer un compte bancaire avec un montant de {string}")
     public void creer_un_compte_bancaire_avec_un_montant_de(String montant) throws Exception {
-        BigDecimal bigMontant = new BigDecimal(montant);
-        var result = mockMvc.perform(post(BASE_PATH + "/" + bigMontant)
+        var result = mockMvc.perform(post(BASE_PATH)
+                        .param("solde", montant)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andReturn();
         expectedBody = objectMapper.readValue(
@@ -55,7 +54,8 @@ public class CompteBancaireStepDefinitions {
 
     @When("j'effectue un dépôt sur ce compte avec un montant de {string}")
     public void j_effectue_un_depot_sur_ce_compte_avec_un_montant_de(String montant) throws Exception {
-        currentResult = mockMvc.perform(post(BASE_PATH + "/depot/" + expectedBody.getNumeroDeCompte() + "/" + montant)
+        currentResult = mockMvc.perform(post(BASE_PATH + "/depot/" + expectedBody.getNumeroDeCompte())
+                        .param("montant", montant)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andReturn();
     }
@@ -81,7 +81,8 @@ public class CompteBancaireStepDefinitions {
 
     @When("j'effectue un retrait de ce compte avec le montant {string}")
     public void effectuer_retrait_avec_montant(String montant) throws Exception {
-        currentResult = mockMvc.perform(post(BASE_PATH + "/retrait/" + expectedBody.getNumeroDeCompte() + "/" + montant)
+        currentResult = mockMvc.perform(post(BASE_PATH + "/retrait/" + expectedBody.getNumeroDeCompte())
+                        .param("montant", montant)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andReturn();
     }
