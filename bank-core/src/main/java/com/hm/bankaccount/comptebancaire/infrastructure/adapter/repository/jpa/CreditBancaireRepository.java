@@ -1,8 +1,8 @@
 package com.hm.bankaccount.comptebancaire.infrastructure.adapter.repository.jpa;
 
 import com.hm.bankaccount.comptebancaire.application.out.CreditBancaireRepositoryPort;
-import com.hm.bankaccount.comptebancaire.domain.model.CreditBancaire;
-import com.hm.bankaccount.comptebancaire.domain.model.ProduitFinancier;
+import com.hm.bankaccount.comptebancaire.domain.model.produitfinancier.CreditBancaire;
+import com.hm.bankaccount.comptebancaire.domain.model.produitfinancier.ProduitFinancier;
 import com.hm.bankaccount.comptebancaire.infrastructure.adapter.repository.jpa.entity.CompteBancaireEntity;
 import com.hm.bankaccount.comptebancaire.infrastructure.adapter.repository.jpa.entity.CreditBancaireEntity;
 import jakarta.persistence.EntityNotFoundException;

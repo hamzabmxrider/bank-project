@@ -1,7 +1,7 @@
 package com.hm.bankaccount.comptebancaire.application.out;
 
-import com.hm.bankaccount.comptebancaire.domain.model.CreditBancaire;
-import com.hm.bankaccount.comptebancaire.domain.model.ProduitFinancier;
+import com.hm.bankaccount.comptebancaire.domain.model.produitfinancier.CreditBancaire;
+import com.hm.bankaccount.comptebancaire.domain.model.produitfinancier.ProduitFinancier;
 
 import java.util.Collection;
 

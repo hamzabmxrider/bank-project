@@ -1,6 +1,7 @@
 package com.hm.bankaccount.comptebancaire.infrastructure.adapter.repository.jpa.entity;
 
-import com.hm.bankaccount.comptebancaire.domain.model.CompteBancaire;
+import com.hm.bankaccount.comptebancaire.domain.model.comptebancaire.CompteBancaire;
+import com.hm.bankaccount.comptebancaire.domain.model.comptebancaire.TypeCompteBancaire;
 import jakarta.persistence.*;
 import lombok.Getter;
 import org.hibernate.annotations.GenericGenerator;
@@ -18,15 +19,19 @@ public class CompteBancaireEntity {
     @GenericGenerator(name = "uuid2", strategy = "uuid2")
     UUID id;
 
+    @Enumerated(EnumType.STRING)
+    TypeCompteBancaire type;
+
     @Column(unique = true)
     private String numeroDeCompte;
 
     @Column(nullable = false)
     private BigDecimal solde;
 
-    public CompteBancaireEntity(UUID id, String numeroDeCompte, BigDecimal solde) {
+    public CompteBancaireEntity(UUID id, TypeCompteBancaire type, String numeroDeCompte, BigDecimal solde) {
         this.id = id;
         this.numeroDeCompte = numeroDeCompte;
+        this.type = type;
         this.solde = solde;
     }
 
@@ -37,6 +42,7 @@ public class CompteBancaireEntity {
     public static CompteBancaireEntity from(CompteBancaire compteBancaire) {
         return new CompteBancaireEntity(
                 null,
+                compteBancaire.getType(),
                 compteBancaire.getNumeroDeCompte(),
                 compteBancaire.getSolde());
     }

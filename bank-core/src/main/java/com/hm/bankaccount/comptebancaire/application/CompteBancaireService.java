@@ -3,15 +3,23 @@ package com.hm.bankaccount.comptebancaire.application;
 import com.hm.bankaccount.comptebancaire.application.out.CompteBancaireRepositoryPort;
 import com.hm.bankaccount.comptebancaire.application.out.CreditBancaireRepositoryPort;
 import com.hm.bankaccount.comptebancaire.application.out.EventPublisherPort;
+import com.hm.bankaccount.comptebancaire.application.out.FileGeneratorPort;
 import com.hm.bankaccount.comptebancaire.application.usecases.CompteBancaireUseCases;
-import com.hm.bankaccount.comptebancaire.domain.model.*;
+import com.hm.bankaccount.comptebancaire.domain.model.comptebancaire.CompteBancaire;
+import com.hm.bankaccount.comptebancaire.domain.model.comptebancaire.LivretEpargne;
+import com.hm.bankaccount.comptebancaire.domain.model.produitfinancier.CreditBancaire;
+import com.hm.bankaccount.comptebancaire.domain.model.produitfinancier.CreditBancaireType;
+import com.hm.bankaccount.comptebancaire.domain.model.produitfinancier.ProduitFinancier;
+import com.hm.bankaccount.comptebancaire.domain.model.produitfinancier.ProduitFinancierAggregator;
 import com.hm.bankaccount.comptebancaire.infrastructure.adapter.repository.jpa.SeqJpaRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Collection;
 
 @Slf4j
@@ -24,6 +32,7 @@ public class CompteBancaireService implements CompteBancaireUseCases {
     private final SeqJpaRepository seqJpaRepository;
 
     private final CompteBancaireRepositoryPort compteBancaireRepositoryPort;
+    private final FileGeneratorPort fileGeneratorPort;
     private final CreditBancaireRepositoryPort creditBancaireRepositoryPort;
 
     @Override
@@ -74,6 +83,12 @@ public class CompteBancaireService implements CompteBancaireUseCases {
         this.eventPublisherPort.publish(compteBancaire.getNumeroDeCompte(), compteBancaire.getEvents());
 
         return creditBancaires;
+    }
+
+    @Override
+    public byte[] redigerReleveBancaire(String numeroCompteBancaire, final LocalDate dateDebut, final LocalDate dateFin) throws IOException {
+        final CompteBancaire compteBancaire = this.compteBancaireRepositoryPort.findByNumeroDeCompte(numeroCompteBancaire, dateDebut, dateFin);
+        return this.fileGeneratorPort.generateReleveBancaire(compteBancaire, dateDebut, dateFin);
     }
 
     @Override

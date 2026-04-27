@@ -1,7 +1,11 @@
-package com.hm.bankaccount.comptebancaire.domain.model;
+package com.hm.bankaccount.comptebancaire.domain.model.comptebancaire;
 
 
 import com.hm.bankaccount.comptebancaire.domain.exception.BusinessRuleViolationException;
+import com.hm.bankaccount.comptebancaire.domain.model.comptebancaire.operation.OperationEvent;
+import com.hm.bankaccount.comptebancaire.domain.model.comptebancaire.operation.OperationEventType;
+import com.hm.bankaccount.comptebancaire.domain.model.produitfinancier.CreditBancaireType;
+import com.hm.bankaccount.comptebancaire.domain.model.produitfinancier.ProduitFinancier;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -14,28 +18,37 @@ public class CompteBancaire {
 
     private UUID id;
 
-    private final String NumeroDeCompte;
+    TypeCompteBancaire type;
+
+    private final String numeroDeCompte;
 
     private BigDecimal solde;
 
-    private Collection<OperationEvent> events;
+    protected Collection<OperationEvent> events;
+
+    protected CompteBancaire(UUID id,
+                             TypeCompteBancaire type,
+                             String numeroDeCompte,
+                             BigDecimal solde,
+                             Collection<OperationEvent> events) {
+        this.id = id;
+        this.type = type;
+        this.numeroDeCompte = numeroDeCompte;
+        this.solde = solde;
+        this.events = events;
+    }
 
     protected CompteBancaire(
             UUID id,
+            TypeCompteBancaire type,
             String NumeroDeCompte,
             BigDecimal solde
     ) {
         this.id = id;
-        this.NumeroDeCompte = NumeroDeCompte;
+        this.type = type;
+        this.numeroDeCompte = NumeroDeCompte;
         this.solde = solde;
         this.events = new ArrayList<>();
-        this.events.add(
-                new OperationEvent(
-                        OperationEventType.OUVERTURE_COMPTE,
-                        solde,
-                        String.format("Ouverture du compte %s avec un dépôt initial de %s", getNumeroDeCompte(), solde),
-                        Instant.now())
-        );
     }
 
     public static CompteBancaire ouvrirUnCompteCourant(String numeroDeCompte, BigDecimal soldeInitial) {
@@ -45,19 +58,21 @@ public class CompteBancaire {
         if ("".equals(numeroDeCompte) || numeroDeCompte == null) {
             throw new BusinessRuleViolationException("Le numéro de compte ne doit pas être null");
         }
-        return new CompteBancaire(null, numeroDeCompte, soldeInitial);
+        final CompteBancaire compteBancaire = new CompteBancaire(
+                null, TypeCompteBancaire.COMPTE_COURANT, numeroDeCompte, soldeInitial);
+        compteBancaire.events.add(
+                new OperationEvent(
+                        numeroDeCompte,
+                        OperationEventType.OUVERTURE_COMPTE,
+                        soldeInitial,
+                        soldeInitial,
+                        String.format("Ouverture du compte %s avec un dépôt initial de %s", numeroDeCompte, soldeInitial),
+                        Instant.now()));
+        return compteBancaire;
     }
 
-    public static CompteBancaire toDomain(
-            UUID id,
-            String accountNumber,
-            BigDecimal solde
-    ) {
-        return new CompteBancaire(id, accountNumber, solde);
-    }
-
-    public boolean estCompatible(final CreditBancaireType creditBancaireType) {
-        return true;
+    public void verifierCompatibiliteCreditBancaire(final CreditBancaireType creditBancaireType) {
+        // RAF
     }
 
     public synchronized void depot(BigDecimal montant) {
@@ -68,8 +83,10 @@ public class CompteBancaire {
         solde = solde.add(montant);
         this.events.add(
                 new OperationEvent(
+                        getNumeroDeCompte(),
                         OperationEventType.DEPOT_COMPTE_BANCAIRE,
                         montant,
+                        solde,
                         String.format("Dépôt de %s sur le compte %s", montant, getNumeroDeCompte()),
                         Instant.now()));
     }
@@ -87,8 +104,10 @@ public class CompteBancaire {
         solde = nextBalance;
         this.events.add(
                 new OperationEvent(
+                        getNumeroDeCompte(),
                         OperationEventType.RETRAIT_COMPTE_BANCAIRE,
                         montant,
+                        solde,
                         String.format("Retrait de %s sur le compte %s", montant, getNumeroDeCompte()),
                         Instant.now()));
     }
@@ -96,8 +115,10 @@ public class CompteBancaire {
     public synchronized void attacherProduitFinancier(ProduitFinancier produitFinancier) {
         this.events.add(
                 new OperationEvent(
+                        getNumeroDeCompte(),
                         OperationEventType.RATTACHEMENT_PRODUIT_FINANCIER,
                         new BigDecimal(produitFinancier.getActif().getValue()),
+                        solde,
                         produitFinancier.getNom(),
                         Instant.now()
                 ));
@@ -108,11 +129,15 @@ public class CompteBancaire {
     }
 
     public String getNumeroDeCompte() {
-        return NumeroDeCompte;
+        return numeroDeCompte;
     }
 
     public BigDecimal getSolde() {
         return solde;
+    }
+
+    public TypeCompteBancaire getType() {
+        return type;
     }
 
     public Collection<OperationEvent> getEvents() {

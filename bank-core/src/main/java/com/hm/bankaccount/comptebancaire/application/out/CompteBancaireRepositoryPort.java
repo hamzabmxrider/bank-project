@@ -1,6 +1,8 @@
 package com.hm.bankaccount.comptebancaire.application.out;
 
-import com.hm.bankaccount.comptebancaire.domain.model.CompteBancaire;
+import com.hm.bankaccount.comptebancaire.domain.model.comptebancaire.CompteBancaire;
+
+import java.time.LocalDate;
 
 public interface CompteBancaireRepositoryPort {
 
@@ -9,4 +11,6 @@ public interface CompteBancaireRepositoryPort {
     CompteBancaire persisterCompteBancaire(CompteBancaire compteBancaire);
 
     CompteBancaire findByNumeroDeCompte(String numeroDeCompte);
+
+    CompteBancaire findByNumeroDeCompte(String numeroDeCompte, LocalDate dateDebut, LocalDate dateFin);
 }

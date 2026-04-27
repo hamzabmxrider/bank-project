@@ -1,9 +1,15 @@
 package com.hm.bankaccount.comptebancaire.domain.model;
 
 import com.hm.bankaccount.comptebancaire.domain.exception.BusinessRuleViolationException;
+import com.hm.bankaccount.comptebancaire.domain.model.comptebancaire.CompteBancaire;
+import com.hm.bankaccount.comptebancaire.domain.model.comptebancaire.CompteBancaireFactory;
+import com.hm.bankaccount.comptebancaire.domain.model.comptebancaire.TypeCompteBancaire;
+import com.hm.bankaccount.comptebancaire.domain.model.comptebancaire.operation.OperationEvent;
+import com.hm.bankaccount.comptebancaire.domain.model.comptebancaire.operation.OperationEventType;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,7 +31,7 @@ class CompteBancaireTest {
     void toDomain_doit_reconstruire_objet_compte_bancaire() {
         UUID id = UUID.randomUUID();
 
-        CompteBancaire compteBancaire = CompteBancaire.toDomain(id, "ACC-002", new BigDecimal("900.00"));
+        CompteBancaire compteBancaire = CompteBancaireFactory.toDomain(id, TypeCompteBancaire.COMPTE_COURANT, "ACC-002", new BigDecimal("900.00"), new ArrayList<>());
 
         assertThat(compteBancaire.getId()).isEqualTo(id);
         assertThat(compteBancaire.getNumeroDeCompte()).isEqualTo("ACC-002");
