@@ -97,6 +97,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: verify
     if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/'))
+    environment: GITHUB_REPOS
     strategy:
       fail-fast: false
       matrix:
@@ -147,6 +148,7 @@ jobs:
   docker-build:
     runs-on: ubuntu-latest
     needs: verify
+    environment: GITHUB_REPOS
     strategy:
       fail-fast: false
       matrix:
@@ -192,6 +194,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: docker-build
     if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/'))
+    environment: GITHUB_REPOS
     strategy:
       fail-fast: false
       matrix:
@@ -248,6 +251,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: docker-publish
     if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/'))
+    environment: GITHUB_REPOS
     strategy:
       fail-fast: false
       matrix:
