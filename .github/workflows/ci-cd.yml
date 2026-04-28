@@ -16,10 +16,6 @@ env:
   K8S_NAMESPACE: bank-account
   K8S_DEPLOYMENT: bank-core
   K8S_CONTAINER: bank-core
-  POSTGRES_USER: bank_account
-  POSTGRES_PASSWORD: bank_account
-  POSTGRES_DB: bank_account
-  DOCKER_POSTGRES_IP: jdbc:postgresql://localhost:5432/bank_account
   GITHUB_TOKEN: ${{ github.token }}
 
 jobs:
@@ -65,23 +61,6 @@ jobs:
   integration-tests:
     runs-on: ubuntu-latest
     needs: unit-tests
-    services:
-      postgres:
-        image: postgres:15-bullseye
-        ports:
-          - 5432:5432
-        env:
-          POSTGRES_DB: ${{env.POSTGRES_DB}}
-          POSTGRES_USER: ${{env.POSTGRES_USER}}
-          POSTGRES_PASSWORD: ${{env.POSTGRES_PASSWORD}}
-        volumes:
-          - ./postgresql/initdb:/docker-entrypoint-initdb.d
-        options: >-
-          --user 1000:1000
-          --health-cmd="pg_isready -U bank_account -d bank_account"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -99,24 +78,6 @@ jobs:
   cucumber-tests:
     runs-on: ubuntu-latest
     needs: integration-tests
-    services:
-      postgres:
-        image: postgres:15-bullseye
-        env:
-          POSTGRES_DB: ${{env.POSTGRES_DB}}
-          POSTGRES_USER: ${{env.POSTGRES_USER}}
-          POSTGRES_PASSWORD: ${{env.POSTGRES_PASSWORD}}
-        volumes:
-          - ./postgresql/initdb:/docker-entrypoint-initdb.d
-        ports:
-          - 5432:5432
-        options: >-
-          --user 1000:1000
-          --health-cmd="pg_isready -U bank_account -d bank_account"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
