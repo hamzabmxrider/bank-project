@@ -131,11 +131,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Resolve project version
+        run: echo "IMAGE_TAG=$(mvn -q -DforceStdout help:evaluate -Dexpression=project.version -pl \"$MODULE\" -am)" >> "$GITHUB_ENV"
+
       - name: Build docker image
         run: |
           REGISTRY="${DOCKER_REGISTRY:-ghcr.io}"
           IMAGE_NAME="${DOCKER_IMAGE_NAME:-$GITHUB_REPOSITORY}"
-          IMAGE_TAG="${GITHUB_SHA::7}"
           docker build -t "${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}" -t "${REGISTRY}/${IMAGE_NAME}:latest" .
         env:
           DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY }}
@@ -151,6 +153,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Resolve project version
+        run: echo "IMAGE_TAG=$(mvn -q -DforceStdout help:evaluate -Dexpression=project.version -pl \"$MODULE\" -am)" >> "$GITHUB_ENV"
+
       - name: Build and push docker image
         run: |
           REGISTRY="${DOCKER_REGISTRY:-ghcr.io}"
@@ -164,7 +169,6 @@ jobs:
             docker login "$REGISTRY" -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
           fi
           IMAGE_NAME="${DOCKER_IMAGE_NAME:-$GITHUB_REPOSITORY}"
-          IMAGE_TAG="${GITHUB_SHA::7}"
           docker build -t "${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}" -t "${REGISTRY}/${IMAGE_NAME}:latest" .
           docker push "${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
           docker push "${REGISTRY}/${IMAGE_NAME}:latest"
@@ -179,6 +183,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Resolve project version
+        run: echo "IMAGE_TAG=$(mvn -q -DforceStdout help:evaluate -Dexpression=project.version -pl \"$MODULE\" -am)" >> "$GITHUB_ENV"
 
       - name: Setup kubectl
         uses: azure/setup-kubectl@v4
@@ -195,7 +202,6 @@ jobs:
           printf '%s' "$KUBE_CONFIG_B64" | base64 -d > "${HOME}/.kube/config"
           REGISTRY="${DOCKER_REGISTRY:-ghcr.io}"
           IMAGE_NAME="${DOCKER_IMAGE_NAME:-$GITHUB_REPOSITORY}"
-          IMAGE_TAG="${GITHUB_SHA::7}"
           IMAGE_REF="${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
           kubectl apply -f k8s/namespace.yaml
           kubectl apply -f k8s/configmap.yaml
