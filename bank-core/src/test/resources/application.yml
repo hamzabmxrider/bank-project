@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: banking-core
+  profiles:
+    active: test
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+server:
+  port: 8080

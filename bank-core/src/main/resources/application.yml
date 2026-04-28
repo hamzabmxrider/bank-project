@@ -1,8 +1,10 @@
 spring:
   application:
     name: banking-core
+  profiles:
+    active: dev
   datasource:
-    url: jdbc:postgresql://${DOCKER_POSTGRES_IP}:5432/bank_account
+    url: jdbc:postgresql://${DOCKER_POSTGRES_IP:localhost}:5432/bank_account
     username: bank_account
     password: bank_account
   jpa:

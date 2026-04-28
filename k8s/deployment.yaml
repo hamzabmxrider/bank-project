@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bank-core
+  namespace: bank-account
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bank-core
+  template:
+    metadata:
+      labels:
+        app: bank-core
+    spec:
+      containers:
+        - name: bank-core
+          image: ghcr.io/your-org/bank-account:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: bank-core-config
+            - secretRef:
+                name: bank-core-secret
+          readinessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 40
+            periodSeconds: 20

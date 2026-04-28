@@ -1,0 +1,159 @@
+stages:
+  - build_jars
+  - unit_tests
+  - integration_tests
+  - cucumber_tests
+  - nexus_publish
+  - docker_build
+  - docker_publish
+  - deploy
+
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH'
+    - if: '$CI_COMMIT_TAG'
+
+variables:
+  JAVA_VERSION: "17"
+  MAVEN_ARGS: "-B -ntp"
+  MODULE: "bank-core"
+  K8S_NAMESPACE: "bank-account"
+  K8S_DEPLOYMENT: "bank-core"
+  K8S_CONTAINER: "bank-core"
+  MAVEN_REPO_LOCAL: "$CI_PROJECT_DIR/.m2/repository"
+  DOCKER_TLS_CERTDIR: ""
+  DOCKER_DRIVER: "overlay2"
+
+cache:
+  paths:
+    - .m2/repository/
+
+.maven_job:
+  image: maven:3.9.9-eclipse-temurin-17
+  cache:
+    key: "$CI_COMMIT_REF_SLUG"
+    paths:
+      - .m2/repository/
+  before_script:
+    - export MAVEN_REPO_LOCAL="$CI_PROJECT_DIR/.m2/repository"
+    - mkdir -p "$MAVEN_REPO_LOCAL"
+
+build_jars:
+  stage: build_jars
+  extends: .maven_job
+  script:
+    - mvn $MAVEN_ARGS -Dmaven.repo.local="$MAVEN_REPO_LOCAL" -pl "$MODULE" -am -DskipTests package
+  artifacts:
+    paths:
+      - bank-core/target/*.jar
+
+unit_tests:
+  stage: unit_tests
+  extends: .maven_job
+  needs: ["build_jars"]
+  script:
+    - mvn $MAVEN_ARGS -Dmaven.repo.local="$MAVEN_REPO_LOCAL" -pl "$MODULE" -am -Dtest=CompteBancaireTest test
+
+integration_tests:
+  stage: integration_tests
+  extends: .maven_job
+  needs: ["unit_tests"]
+  script:
+    - mvn $MAVEN_ARGS -Dmaven.repo.local="$MAVEN_REPO_LOCAL" -pl "$MODULE" -am -Dtest='*IT' -DfailIfNoTests=false test
+
+cucumber_tests:
+  stage: cucumber_tests
+  extends: .maven_job
+  needs: ["integration_tests"]
+  script:
+    - mvn $MAVEN_ARGS -Dmaven.repo.local="$MAVEN_REPO_LOCAL" -pl "$MODULE" -am -Dtest=CompteBancaireCucumberTest test
+
+nexus_publish:
+  stage: nexus_publish
+  extends: .maven_job
+  needs: ["cucumber_tests"]
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH || $CI_COMMIT_TAG'
+  script:
+    - |
+      if [ -z "${NEXUS_URL:-}" ] || [ -z "${NEXUS_USERNAME:-}" ] || [ -z "${NEXUS_PASSWORD:-}" ]; then
+        echo "Nexus credentials are not configured. Skipping publication."
+        exit 0
+      fi
+      NEXUS_REPO="${NEXUS_REPOSITORY:-maven-releases}"
+      if [ -z "${CI_COMMIT_TAG:-}" ] && [ "${CI_COMMIT_BRANCH:-}" != "${CI_DEFAULT_BRANCH:-main}" ]; then
+        NEXUS_REPO="${NEXUS_REPOSITORY:-maven-snapshots}"
+      fi
+      mvn $MAVEN_ARGS -s ci/maven-settings.xml -Dmaven.repo.local="$MAVEN_REPO_LOCAL" -pl "$MODULE" -am -DskipTests -DaltDeploymentRepository=nexus::default::${NEXUS_URL}/repository/${NEXUS_REPO} deploy
+
+docker_build:
+  stage: docker_build
+  image: docker:24
+  services:
+    - name: docker:24-dind
+  needs: ["cucumber_tests"]
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" || $CI_COMMIT_BRANCH || $CI_COMMIT_TAG'
+  script:
+    - REGISTRY="${DOCKER_REGISTRY:-$CI_REGISTRY}"
+    - IMAGE_NAME="${DOCKER_IMAGE_NAME:-$CI_REGISTRY_IMAGE/bank-core}"
+    - IMAGE_TAG="${CI_COMMIT_SHORT_SHA}"
+    - docker build -t "${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}" -t "${REGISTRY}/${IMAGE_NAME}:latest" .
+    - docker save "${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}" -o image.tar
+    - printf '%s\n' "${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}" > image-ref.txt
+  artifacts:
+    paths:
+      - image.tar
+      - image-ref.txt
+
+docker_publish:
+  stage: docker_publish
+  image: docker:24
+  services:
+    - name: docker:24-dind
+  needs: ["docker_build"]
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH || $CI_COMMIT_TAG'
+  script:
+    - |
+      if [ -z "${DOCKER_USERNAME:-}" ] || [ -z "${DOCKER_PASSWORD:-}" ]; then
+        DOCKER_USERNAME="${CI_REGISTRY_USER:-}"
+        DOCKER_PASSWORD="${CI_REGISTRY_PASSWORD:-}"
+      fi
+      if [ -z "${DOCKER_USERNAME:-}" ] || [ -z "${DOCKER_PASSWORD:-}" ]; then
+        echo "Docker registry credentials are not configured. Skipping publication."
+        exit 0
+      fi
+      docker load -i image.tar
+      IMAGE_REF="$(cat image-ref.txt)"
+      docker tag "$IMAGE_REF" "${IMAGE_REF%:*}:latest"
+      docker login "${DOCKER_REGISTRY:-$CI_REGISTRY}" -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
+      docker push "$IMAGE_REF"
+      docker push "${IMAGE_REF%:*}:latest"
+
+deploy:
+  stage: deploy
+  image: bitnami/kubectl:1.30
+  needs: ["docker_publish"]
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH || $CI_COMMIT_TAG'
+  script:
+    - |
+      if [ -z "${KUBE_CONFIG_B64:-}" ]; then
+        echo "Kubernetes configuration is not set. Skipping deployment."
+        exit 0
+      fi
+      mkdir -p "${HOME}/.kube"
+      printf '%s' "$KUBE_CONFIG_B64" | base64 -d > "${HOME}/.kube/config"
+      REGISTRY="${DOCKER_REGISTRY:-$CI_REGISTRY}"
+      IMAGE_NAME="${DOCKER_IMAGE_NAME:-$CI_REGISTRY_IMAGE/bank-core}"
+      IMAGE_TAG="${CI_COMMIT_SHORT_SHA}"
+      IMAGE_REF="${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
+      kubectl apply -f k8s/namespace.yaml
+      kubectl apply -f k8s/configmap.yaml
+      kubectl apply -f k8s/secret.yaml
+      kubectl apply -f k8s/deployment.yaml
+      kubectl apply -f k8s/service.yaml
+      kubectl -n "${K8S_NAMESPACE}" set image "deployment/${K8S_DEPLOYMENT}" "${K8S_CONTAINER}=${IMAGE_REF}"
+      kubectl -n "${K8S_NAMESPACE}" rollout status "deployment/${K8S_DEPLOYMENT}"
