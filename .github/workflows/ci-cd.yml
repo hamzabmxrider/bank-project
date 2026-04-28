@@ -221,19 +221,18 @@ jobs:
       - name: Resolve project version
         run: echo "IMAGE_TAG=$(mvn -q -DforceStdout help:evaluate -Dexpression=project.version)" >> "$GITHUB_ENV"
 
+      - name: Login to Docker Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ${{DOCKER_REGISTRY}}
+          username: ${{DOCKER_USERNAME}}
+          password: ${{DOCKER_PASSWORD}}
+
       - name: Build and push ${{ matrix.service.module }} docker image
         run: |
           REGISTRY="${DOCKER_REGISTRY:-ghcr.io}"
-          if [ "$REGISTRY" = "ghcr.io" ] && [ -z "${DOCKER_USERNAME:-}" ]; then
-            docker login ghcr.io -u "${GITHUB_ACTOR}" -p "${GITHUB_TOKEN}"
-          else
-            if [ -z "${DOCKER_USERNAME:-}" ] || [ -z "${DOCKER_PASSWORD:-}" ]; then
-              echo "Docker registry credentials are not configured. Skipping publication."
-              exit 0
-            fi
-            docker login "$REGISTRY" -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
-          fi
           IMAGE_NAME="${DOCKER_IMAGE_NAME:-${{ matrix.service.image_name }}}"
+          echo "Running docker push on $DOCKER_REGISTRY/$IMAGE_NAME:$IMAGE_TAG & $DOCKER_REGISTRY/$IMAGE_NAME:latest"
           docker build \
             --build-arg MODULE_PATH="${{ matrix.service.module }}" \
             -f "${{ matrix.service.dockerfile }}" \
