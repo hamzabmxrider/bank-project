@@ -12,15 +12,31 @@ permissions:
 env:
   JAVA_VERSION: '17'
   MAVEN_ARGS: '-B -ntp'
-  MODULE: bank-core
   K8S_NAMESPACE: bank-account
-  K8S_DEPLOYMENT: bank-core
-  K8S_CONTAINER: bank-core
   GITHUB_TOKEN: ${{ github.token }}
 
 jobs:
   build-jars:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - module: bank-core
+            image_name: bank-core
+            deployment: bank-core
+            container: bank-core
+            docker_context: .
+            dockerfile: Dockerfile
+            k8s_dir: k8s
+          # Add more microservices here:
+          # - module: service-a
+          #   image_name: service-a
+          #   deployment: service-a
+          #   container: service-a
+          #   docker_context: .
+          #   dockerfile: Dockerfile
+          #   k8s_dir: k8s/service-a
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -32,18 +48,37 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           cache: maven
 
-      - name: Build jars
-        run: mvn $MAVEN_ARGS -pl "$MODULE" -am -DskipTests package
+      - name: Build ${{ matrix.service.module }} jar
+        run: mvn $MAVEN_ARGS -pl "${{ matrix.service.module }}" -am -DskipTests package
 
-      - name: Upload jar
+      - name: Upload ${{ matrix.service.module }} jar
         uses: actions/upload-artifact@v4
         with:
-          name: bank-core-jar
-          path: bank-core/target/*.jar
+          name: ${{ matrix.service.module }}-jar
+          path: ${{ matrix.service.module }}/target/*.jar
 
-  unit-tests:
+  verify:
     runs-on: ubuntu-latest
     needs: build-jars
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - module: bank-core
+            image_name: bank-core
+            deployment: bank-core
+            container: bank-core
+            docker_context: .
+            dockerfile: Dockerfile
+            k8s_dir: k8s
+          # Add more microservices here:
+          # - module: service-a
+          #   image_name: service-a
+          #   deployment: service-a
+          #   container: service-a
+          #   docker_context: .
+          #   dockerfile: Dockerfile
+          #   k8s_dir: k8s/service-a
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -55,47 +90,32 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           cache: maven
 
-      - name: Unit tests
-        run: mvn $MAVEN_ARGS -pl "$MODULE" -am -Dtest=CompteBancaireTest test
-
-  integration-tests:
-    runs-on: ubuntu-latest
-    needs: unit-tests
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: ${{ env.JAVA_VERSION }}
-          cache: maven
-
-      - name: Integration tests
-        run: mvn $MAVEN_ARGS -pl "$MODULE" -am verify
-
-  cucumber-tests:
-    runs-on: ubuntu-latest
-    needs: integration-tests
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: ${{ env.JAVA_VERSION }}
-          cache: maven
-
-      - name: Cucumber tests
-        run: mvn $MAVEN_ARGS -pl "$MODULE" -am -Dtest=CompteBancaireCucumberTest test
+      - name: Verify ${{ matrix.service.module }}
+        run: mvn $MAVEN_ARGS -pl "${{ matrix.service.module }}" -am verify
 
   nexus-publish:
     runs-on: ubuntu-latest
-    needs: cucumber-tests
+    needs: verify
     if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/'))
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - module: bank-core
+            image_name: bank-core
+            deployment: bank-core
+            container: bank-core
+            docker_context: .
+            dockerfile: Dockerfile
+            k8s_dir: k8s
+          # Add more microservices here:
+          # - module: service-a
+          #   image_name: service-a
+          #   deployment: service-a
+          #   container: service-a
+          #   docker_context: .
+          #   dockerfile: Dockerfile
+          #   k8s_dir: k8s/service-a
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -107,7 +127,7 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           cache: maven
 
-      - name: Publish to Nexus
+      - name: Publish ${{ matrix.service.module }} to Nexus
         run: |
           if [ -z "${NEXUS_URL:-}" ] || [ -z "${NEXUS_USERNAME:-}" ] || [ -z "${NEXUS_PASSWORD:-}" ]; then
             echo "Nexus credentials are not configured. Skipping publication."
@@ -117,7 +137,7 @@ jobs:
           if [ "${GITHUB_REF_TYPE:-branch}" != "tag" ] && [ "${GITHUB_REF_NAME:-}" != "main" ]; then
             NEXUS_REPO="${NEXUS_REPOSITORY:-maven-snapshots}"
           fi
-          mvn $MAVEN_ARGS -s ci/maven-settings.xml -pl "$MODULE" -am -DskipTests -DaltDeploymentRepository=nexus::default::${NEXUS_URL}/repository/${NEXUS_REPO} deploy
+          mvn $MAVEN_ARGS -s ci/maven-settings.xml -pl "${{ matrix.service.module }}" -am -DskipTests -DaltDeploymentRepository=nexus::default::${NEXUS_URL}/repository/${NEXUS_REPO} deploy
         env:
           NEXUS_URL: ${{ secrets.NEXUS_URL }}
           NEXUS_USERNAME: ${{ secrets.NEXUS_USERNAME }}
@@ -126,37 +146,79 @@ jobs:
 
   docker-build:
     runs-on: ubuntu-latest
-    needs: cucumber-tests
+    needs: verify
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - module: bank-core
+            image_name: bank-core
+            deployment: bank-core
+            container: bank-core
+            docker_context: .
+            dockerfile: Dockerfile
+            k8s_dir: k8s
+          # Add more microservices here:
+          # - module: service-a
+          #   image_name: service-a
+          #   deployment: service-a
+          #   container: service-a
+          #   docker_context: .
+          #   dockerfile: Dockerfile
+          #   k8s_dir: k8s/service-a
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Resolve project version
-        run: echo "IMAGE_TAG=$(mvn -q -DforceStdout help:evaluate -Dexpression=project.version -pl \"$MODULE\" -am)" >> "$GITHUB_ENV"
+        run: echo "IMAGE_TAG=$(mvn -q -DforceStdout help:evaluate -Dexpression=project.version)" >> "$GITHUB_ENV"
 
-      - name: Build docker image
+      - name: Build ${{ matrix.service.module }} docker image
         run: |
           REGISTRY="${DOCKER_REGISTRY:-ghcr.io}"
-          IMAGE_NAME="${DOCKER_IMAGE_NAME:-$GITHUB_REPOSITORY}"
-          docker build -t "${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}" -t "${REGISTRY}/${IMAGE_NAME}:latest" .
+          IMAGE_NAME="${DOCKER_IMAGE_NAME:-${{ matrix.service.image_name }}}"
+          docker build \
+            --build-arg MODULE_PATH="${{ matrix.service.module }}" \
+            -f "${{ matrix.service.dockerfile }}" \
+            -t "${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}" \
+            -t "${REGISTRY}/${IMAGE_NAME}:latest" \
+            "${{ matrix.service.docker_context }}"
         env:
           DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY }}
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-          DOCKER_IMAGE_NAME: ${{ secrets.DOCKER_BANK_CORE_IMAGE_NAME }}
 
   docker-publish:
     runs-on: ubuntu-latest
     needs: docker-build
     if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/'))
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - module: bank-core
+            image_name: bank-core
+            deployment: bank-core
+            container: bank-core
+            docker_context: .
+            dockerfile: Dockerfile
+            k8s_dir: k8s
+          # Add more microservices here:
+          # - module: service-a
+          #   image_name: service-a
+          #   deployment: service-a
+          #   container: service-a
+          #   docker_context: .
+          #   dockerfile: Dockerfile
+          #   k8s_dir: k8s/service-a
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Resolve project version
-        run: echo "IMAGE_TAG=$(mvn -q -DforceStdout help:evaluate -Dexpression=project.version -pl \"$MODULE\" -am)" >> "$GITHUB_ENV"
+        run: echo "IMAGE_TAG=$(mvn -q -DforceStdout help:evaluate -Dexpression=project.version)" >> "$GITHUB_ENV"
 
-      - name: Build and push docker image
+      - name: Build and push ${{ matrix.service.module }} docker image
         run: |
           REGISTRY="${DOCKER_REGISTRY:-ghcr.io}"
           if [ "$REGISTRY" = "ghcr.io" ] && [ -z "${DOCKER_USERNAME:-}" ]; then
@@ -168,31 +230,56 @@ jobs:
             fi
             docker login "$REGISTRY" -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
           fi
-          IMAGE_NAME="${DOCKER_IMAGE_NAME:-$GITHUB_REPOSITORY}"
-          docker build -t "${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}" -t "${REGISTRY}/${IMAGE_NAME}:latest" .
+          IMAGE_NAME="${DOCKER_IMAGE_NAME:-${{ matrix.service.image_name }}}"
+          docker build \
+            --build-arg MODULE_PATH="${{ matrix.service.module }}" \
+            -f "${{ matrix.service.dockerfile }}" \
+            -t "${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}" \
+            -t "${REGISTRY}/${IMAGE_NAME}:latest" \
+            "${{ matrix.service.docker_context }}"
           docker push "${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
           docker push "${REGISTRY}/${IMAGE_NAME}:latest"
         env:
           DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY }}
-          DOCKER_IMAGE_NAME: ${{ secrets.DOCKER_BANK_CORE_IMAGE_NAME }}
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
   deploy:
     runs-on: ubuntu-latest
     needs: docker-publish
     if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/'))
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - module: bank-core
+            image_name: bank-core
+            deployment: bank-core
+            container: bank-core
+            docker_context: .
+            dockerfile: Dockerfile
+            k8s_dir: k8s
+          # Add more microservices here:
+          # - module: service-a
+          #   image_name: service-a
+          #   deployment: service-a
+          #   container: service-a
+          #   docker_context: .
+          #   dockerfile: Dockerfile
+          #   k8s_dir: k8s/service-a
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Resolve project version
-        run: echo "IMAGE_TAG=$(mvn -q -DforceStdout help:evaluate -Dexpression=project.version -pl \"$MODULE\" -am)" >> "$GITHUB_ENV"
+        run: echo "IMAGE_TAG=$(mvn -q -DforceStdout help:evaluate -Dexpression=project.version)" >> "$GITHUB_ENV"
 
       - name: Setup kubectl
         uses: azure/setup-kubectl@v4
         with:
           version: v1.30.5
 
-      - name: Deploy to Kubernetes
+      - name: Deploy ${{ matrix.service.module }} to Kubernetes
         run: |
           if [ -z "${KUBE_CONFIG_B64:-}" ]; then
             echo "Kubernetes configuration is not set. Skipping deployment."
@@ -201,16 +288,15 @@ jobs:
           mkdir -p "${HOME}/.kube"
           printf '%s' "$KUBE_CONFIG_B64" | base64 -d > "${HOME}/.kube/config"
           REGISTRY="${DOCKER_REGISTRY:-ghcr.io}"
-          IMAGE_NAME="${DOCKER_IMAGE_NAME:-$GITHUB_REPOSITORY}"
+          IMAGE_NAME="${DOCKER_IMAGE_NAME:-${{ matrix.service.image_name }}}"
           IMAGE_REF="${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
-          kubectl apply -f k8s/namespace.yaml
-          kubectl apply -f k8s/configmap.yaml
-          kubectl apply -f k8s/secret.yaml
-          kubectl apply -f k8s/deployment.yaml
-          kubectl apply -f k8s/service.yaml
-          kubectl -n "${K8S_NAMESPACE}" set image "deployment/${K8S_DEPLOYMENT}" "${K8S_CONTAINER}=${IMAGE_REF}"
-          kubectl -n "${K8S_NAMESPACE}" rollout status "deployment/${K8S_DEPLOYMENT}"
+          kubectl apply -f "${{ matrix.service.k8s_dir }}/namespace.yaml"
+          kubectl apply -f "${{ matrix.service.k8s_dir }}/configmap.yaml"
+          kubectl apply -f "${{ matrix.service.k8s_dir }}/secret.yaml"
+          kubectl apply -f "${{ matrix.service.k8s_dir }}/deployment.yaml"
+          kubectl apply -f "${{ matrix.service.k8s_dir }}/service.yaml"
+          kubectl -n "${K8S_NAMESPACE}" set image "deployment/${{ matrix.service.deployment }}" "${{ matrix.service.container }}=${IMAGE_REF}"
+          kubectl -n "${K8S_NAMESPACE}" rollout status "deployment/${{ matrix.service.deployment }}"
         env:
           KUBE_CONFIG_B64: ${{ secrets.KUBE_CONFIG_B64 }}
           DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY }}
-          DOCKER_IMAGE_NAME: ${{ secrets.DOCKER_BANK_CORE_IMAGE_NAME }}
